@@ -1,0 +1,185 @@
+/* #sidebar { */
+/*   width: 18%; */
+/*   float: left; */
+/*   border: solid 2px #aaaaaa; */
+/*   padding: 5px; */
+/*   background-color: #efefef; */
+/*   margin-right: 5px; */
+/* } */
+
+.rotate90 { 
+  /* for firefox, safari, chrome, etc. */
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  /* for ie */
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+.percent { 
+  font-weight: bold; 
+  text-align: right; 
+  color: #000000; 
+}
+
+div.note { 
+  float: right;
+}
+
+#log { 
+  margin: 7px;
+  font-family: monospace;
+  font-size: smaller;
+}
+
+#menuContent p {
+  margin-top: 7px;
+  font-size: x-small;
+  border-bottom: dotted 1px #aaaaaa;
+  margin-bottom: 4px;
+}
+
+#menuContent_h p {
+  font-size: x-small;
+  border-bottom: dotted 1px #aaaaaa;
+  margin-bottom: 4px;
+}
+
+#toolbar { 
+  text-align: right;
+  margin: 3px;
+  padding: 3px;
+  margin-top: 0px;
+  border: solid 2px #aaaaaa;
+  background-color: #efefef;
+}
+
+
+select {
+  margin-right: 5px;
+}
+
+#results {
+  width: 80%;
+  float: right;
+}
+
+.class {
+  background-color: #990000;
+  text-align: center;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.match {
+  color: #222222;
+  margin: 3px;
+  padding: 3px;
+  border: solid 1px #aaaaaa;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+#error { 
+  margin-left: 20px;
+  padding-left: 25px;
+  padding-top: 80px;
+  color: #990000;
+  font-weight: bold;
+}
+
+#warning { 
+  margin-left: 20px;
+  padding-left: 25px;
+  padding-top: 80px;
+  color: #bb9900;
+  font-weight: bold;
+}
+
+.error { 
+  margin: 3px;
+  margin-top: 5px;
+  padding: 3px;
+  border: solid 2px #990000;
+  background-color: #ffeeee;
+  color: #990000;
+  font-weight: bold;
+  font-size: xx-small;
+}
+
+
+.match b { 
+  color: #000000;
+}
+
+.match_meta {
+  color: #009900;
+  font-weight: bold;
+  font-size: xx-small;
+  background-color: #eee;
+}
+
+.match_left { 
+  width: 49%; 
+  float: left;
+  padding-right: 5px;
+  border-right: dotted 1px #999999;
+  margin-right: 5px;
+  cursor: help;
+}
+
+.match_left_h {
+  border-bottom: dotted 1px #999999;
+  padding-bottom: 4px;
+  cursor: help;
+}
+
+.match_right { 
+  float: right;
+  width: 49%;
+  cursor: help;
+}
+
+.match_right_h {
+  margin-top: 4px;
+  cursor: help;
+}
+
+hr.clear { 
+  margin: 0px;
+  padding: 0px;
+  clear: both;
+  border: 0px;
+}
+
+td.r { 
+  text-align: right;
+}
+
+
+#content table.ptd { 
+  background-color: #ffffff;
+  border: solid 1px #aaaaaa;
+}
+
+#content table.ptd img:hover { 
+  cursor: pointer;
+}
+
+#content table.ptd table { 
+  background-color: #efefef;
+  margin: 0px;
+  width: 100%;
+}
+
+.hl {
+  font-weight: bold;
+}
+
+#search_results {
+   margin-bottom: 10px;
+   display: block;
+   width: 100%;
+   margin-left: 2px;
+   font-size: 9pt;
+}
+
