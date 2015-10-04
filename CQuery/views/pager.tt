@@ -1,0 +1,128 @@
+<span style="float: left;">
+  [% IF has_prev %]
+  <form action="[% uri_base %]search/[% ctype %]/[% sellang %]" method="POST">
+    [% IF bil %]
+      <input type="hidden" name="query1" value="[% query1_string | html %]"/>
+      <input type="hidden" name="query2" value="[% query2_string | html %]"/>
+    [% ELSE %]
+      <input type="hidden" name="query" value="[% query_string %]"/>
+    [% END %]
+    <input type="hidden" name="pp" value="[% pp %]"/>
+    [% SET new = from - pp*2 %]
+    [% IF new > 0 %]
+      <input type="hidden" name="curr" value="[% curr %]"/>
+      <input type="hidden" name="from" value="[% new %]"/>
+    [% ELSE %]
+      <input type="hidden" name="curr" value="[% curr - 1 < 0 ? 0 : curr - 1 %]"/>
+      <input type="hidden" name="from" value="[% 0 %]"/>
+    [% END %]
+    [% FOREACH i IN selcorpora %]
+      <input type="hidden" name="corpora" value="[% i %]"/>
+    [% END %]
+    <input type="submit" value="Previous Page">
+  </form>
+  [% END %]
+</span>
+
+<span style="float: right;">
+  [% IF has_next %]
+  <form action="[% uri_base %]search/[% ctype %]/[% sellang %]" method="POST">
+    [% IF bil %]
+      <input type="hidden" name="query1" value="[% query1_string | html %]"/>
+      <input type="hidden" name="query2" value="[% query2_string | html %]"/>
+    [% ELSE %]
+      <input type="hidden" name="query" value="[% query_string | html %]"/>
+    [% END %]
+    <input type="hidden" name="curr" value="[% curr %]"/>
+    <input type="hidden" name="pp" value="[% pp %]"/>
+    <input type="hidden" name="from" value="[% from %]"/>
+    [% FOREACH i IN selcorpora %]
+      <input type="hidden" name="corpora" value="[% i %]"/>
+    [% END %]
+    <input type="submit" value="Next Page">
+  </form>
+  [% END %]
+</span>
+
+<span style="clear: both;"></span>
+
+<center><table>
+  <tr><td colspan="2"><i>Quick jump to results:</i></td></tr>
+  <tr><td>
+    <select onChange="javascript: selectCorpus(this);" id="jump_corpus">
+      <option select="yes">Select corpus ..</option>
+      [% SET corpus_i = 0 %]
+      [% FOREACH k IN selcorpora %]
+        <option value="[% corpus_i %]">[% k %]</option>
+        [% corpus_i = corpus_i + 1 %]
+      [% END %]
+    </select>
+    <span id="jump_tag" style="color: #ccc">Page:</span><input type="text" id="jump_page" style="font-style: italic;" onClick="javascript: selectPage(this);" size="16" disabled="yes">
+    <input id="jump_but" type="submit" value=" Go! " disabled="yes" onClick="javascript: selectGo();">
+  </td></tr>
+</table></center>
+
+<script type="text/javascript">
+  var error_msg = "Please select corpus, choose page within the range, and then click 'Go' to jump to that results page";
+  var max_pages = [];
+  [% SET corpus_i = 0 %]
+  [% FOREACH k IN selcorpora %]
+    max_pages[[% corpus_i %]] = Math.ceil([% search_results.item(k) -%] / [% pp %]);
+    [% corpus_i = corpus_i + 1 %]
+  [% END %]
+
+  function selectCorpus(c) {
+    if (max_pages[c.value]) {
+      var str = "[from 1 to "+max_pages[c.value]+"]";
+      var e = document.getElementById('jump_page');
+      e.disabled = false;
+      e.value = str;
+      e = document.getElementById('jump_tag');
+      e.style.color='';
+    }
+    else {
+      alert(error_msg);
+    }
+  }
+
+  function selectPage(e) {
+    e.select();
+    e = document.getElementById('jump_but');
+    e.disabled = false;
+  }
+
+  function selectGo() {
+    var e = document.getElementById('jump_page');
+    var page = e.value;
+    page = parseInt(page);
+
+    e = document.getElementById('jump_corpus');
+    var corpus = e.value;
+
+    if ( (page>1) && (page<=max_pages[corpus]) )
+      //alert("corpus "+corpus+" page "+page);
+      jump(corpus, page);
+    else
+      alert(error_msg);
+  }
+
+  function jump(corpus, page) {
+    var url = "[% uri_base %]search/[% ctype %]/[% sellang %]";
+   [% IF bil %]
+    var query1 = escape('[% query1_string %]');
+    var query2 = escape('[% query2_string %]');
+   [% ELSE %]
+    var query = "[% query_string %]";
+   [% END %]
+    var curr = corpus;
+    var pp = [% pp %];
+    var from = (page-1) * pp;
+    var corpora = "&corpora=[% selcorpora.join('&corpora=') %]";
+
+   [% IF bil %]
+    window.location = url + '?query1=' + query1 + '&query2=' + query2 + '&curr=' + corpus + '&pp=' + pp + '&from=' + from + corpora;
+   [% ELSE %]
+    window.location = url + '?query=' + query + '&curr=' + corpus + '&pp=' + pp + '&from=' + from + corpora;
+   [% END %]
+  }
+</script>

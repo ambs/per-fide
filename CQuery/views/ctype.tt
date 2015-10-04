@@ -1,0 +1,10 @@
+<p>Select Type</p>
+<form action="[% uri_base %]redirect" method="POST">
+  <input type="hidden" name="var" value="ctype"/>
+  <select id="ctype" name="ctype"
+          onChange='window.location="[% uri_base %]" + $("#ctype").val()'>
+    <option [% IF ctype!='bilingual' %]selected="selected"[% END %] value="monolingual">monolingual</option>
+    <option [% IF ctype=='bilingual' %]selected="selected"[% END %] value="bilingual">bilingual</option>
+  </select>
+  <input type="submit" value=" → "/>
+</form>

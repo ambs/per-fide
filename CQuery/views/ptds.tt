@@ -1,0 +1,16 @@
+
+
+[% IF mptd %]
+<div style="float: right">
+  <h2 style="text-align: right">Mega-PTD: [% ptd.l1 %] → [% ptd.l2 %]</h2>
+  <h3 style="text-align: right">[% mptd.word %] ([% mptd.count %] occurrences)</h3>
+  [% INCLUDE ptd.tt dic=mptd, type="mega" %] 
+</div>
+[% END %]
+
+<div>
+  <h2>PTD for [% ptd.cname %]: [% ptd.l1 %] → [% ptd.l2 %]</h2>
+  <h3>[% ptd.word %] ([% ptd.count %] occurrences)</h3>
+  [% INCLUDE ptd.tt dic=ptd %] 
+</div>
+

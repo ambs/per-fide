@@ -1,0 +1,40 @@
+[% IF mono %]
+  [% FOR c IN mono %]
+    [% UNLESS search_results.item(c.crp) > 0 %][% NEXT %][% END %]
+    [% IF c.shown_size > 0 %]
+       [% FOR m IN c.ans %]
+          <tu>
+            <tuv lang='[% lang1 %]'><seg>[% m.meta %]</seg></tuv>
+          </tu>
+       [% END %]
+    [% END %]
+  [% END %]
+[% END %]
+
+[% IF bil %]
+<body>
+  [% FOR c IN bil %]
+    [% UNLESS search_results.item(c.crp) > 0 %][% NEXT %][% END %]
+    [% IF c.shown_size > 0 %]
+<tmx version="version 1.0">
+<header
+	creationtool="CQuery2/export"
+	creationtoolversion="1.0"
+	segtype="sentence"
+	tmx-name="[% c.crp %]"
+	adminlang="[% lang1 %]-[% lang2 %]"
+	srclang="[% lang1 %]"
+	o-tmf="CQP-corpora"
+>
+</header>
+      [% FOR m IN c.ans %]
+<tu>
+	<tuv lang='[% lang1 %]'><seg>[% m.left %]</seg></tuv>
+	<tuv lang='[% lang2 %]'><seg>[% m.right %]</seg></tuv>
+</tu>
+      [% END %]
+</tmx>
+    [% END %]
+  [% END %]
+</body>
+[% END %]

@@ -1,0 +1,75 @@
+<p>Select corpora</p>
+<form action="[% uri_base %]search/[% ctype %]/[% sellang %]" method="POST">
+  <input type="hidden" name="var" value="corpora"/>
+  <input type="hidden" name="lang" value="[% sellang %]"/>
+  <input type="hidden" name="ctype" value="[% ctype %]"/>
+  [% SET i = 1 %]
+
+  [% IF options.menu_hor %]
+    <table style="border: 0 none;">
+      <tr>
+      [% SET i = 1 %]
+      [% FOREACH k IN corpora.keys.sort %]
+        <td style="padding: 0px;">[% PROCESS item id=k name=corpora.$k.name %]</td>
+        [% IF i mod 2 == 0 %]
+          </tr><tr>
+        [% END %]
+        [% SET i = i + 1 %]
+      [% END %]
+      </tr>
+    </table>
+  [% ELSE %]
+    [% FOREACH k IN corpora.keys.sort %]
+      [% PROCESS item id=k name=corpora.$k.name %]
+    [% END %]
+  [% END %]
+
+  [% IF options.menu_hor %]
+    </td><td style="vertical-align: top; padding: 0px 0px 0px 30px;">
+  [% END %]
+
+  [% IF ctype=='monolingual' %]
+    <p>Enter query</p>
+    <input name='query'  type="text" value='[% query_string || '' %]'/>
+  [% ELSE %]
+    <p>[% lang1 %] query</p>
+    <input [% IF options.menu_hor %]size="56"[% ELSE %]size="18"[% END %] type="text"
+           name='query1' value='[% query1_string | html %]' onkeyup="javascript: checkPTDBut(this,'pdt1_but');" />
+      <input name="ptd1" type="submit" value=" ptd⇢ " id="pdt1_but" disabled="yes" />
+    <p>[% lang2 %] query</p>
+    <input [% IF options.menu_hor %]size="56"[% ELSE %]size="18"[% END %] type="text"
+           name='query2' value='[% query2_string | html %]' onkeyup="javascript: checkPTDBut(this,'pdt2_but');" />
+      <input name="ptd2" type="submit" value=" ptd⇢ " id="pdt2_but" disabled="yes" />
+  [% END %]
+
+  <br/>
+
+  <input type="submit" name="concordances" value=" Search → "/><br>
+  Entries per page: <select name="pp">
+    <option value="20"[% IF pp == 20 %] selected="yes"[% END %]>20</option>
+    <option value="50"[% IF pp == 50 %] selected="yes"[% END %]>50</option>
+    <option value="100"[% IF pp == 100 %] selected="yes"[% END %]>100</option>
+    <option value="1000"[% IF pp == 1000 %] selected="yes"[% END %]>1000</option>
+  </select>
+</form>
+
+[% BLOCK item %]
+    <label><input type='checkbox'
+         [% IF selcorpora.exists(id) %] checked='yes'[% END %]
+         name='corpora' value='[% id %]'/>[% id || name %]</label>
+    (<a href='[% uri_base %]meta/[% id %]'>info</a>)<br/>
+[% END %]
+
+<script type="text/javascript">
+  function checkPTDBut(input, b) {
+    var str = input.value;
+    var re = new RegExp("( |\\[|\\])");
+
+    var e = document.getElementById(b);
+    if (re.test(str) || str==="")
+      e.disabled = true;
+    else
+      e.disabled = false;
+  
+  }
+</script>

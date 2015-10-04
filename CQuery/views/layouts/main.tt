@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
+    <title>CQuery</title>
+    <link rel="stylesheet" href="[% uri_base %]css/style.css" />
+    <link rel="stylesheet" href="[% uri_base %]css/query.css" />
+    
+    <!-- Grab Google CDN's jQuery. fall back to local if necessary -->
+    <script type="text/javascript">
+      var uri_base = "[% uri_base %]";
+    </script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
+    <script type="text/javascript">/* <![CDATA[ */
+    !window.jQuery && document.write('<script type="text/javascript" src="[% uri_base%]javascripts/jquery.js"><\/script>')
+/* ]]> */</script>
+    <script src="[% uri_base %]javascripts/main.js" type="text/javascript"></script>
+    <script src="[% uri_base %]javascripts/ptds.js" type="text/javascript"></script>
+  </head>
+  <body>
+      [% content %]
+      <div id="footer">
+        <a href="http://ceh.ilch.uminho.pt/"><img src="[% uri_base %]images/cehum.png"
+               alt="Centro de Estudos Humanísticos da Universidade do Minho"
+           title="Centro de Estudos Humanísticos da Universidade do Minho"/></a>
+        <a href="http://www.ilch.uminho.pt/"><img src="[% uri_base %]images/ilch.png"
+               alt="Instituto de Letras e Ciências Humanas - Universidade do Minho"
+  title="Instituto de Letras e Ciências Humanas - Universidade do Minho"/></a>
+        <a href="http://www.cctc.uminho.pt/"><img src="[% uri_base %]images/cctc.png"
+               alt="Centro de Ciências e Tecnologias da Computação - Universidade do Minho"
+  title="Centro de Ciências e Tecnologias da Computação - Universidade do Minho"/></a>
+        <a href="http://www.di.uminho.pt/"><img src="[% uri_base %]images/dium.png"
+               alt="Departamento de Informática - Universidade do Minho"
+               title="Departamento de Informática - Universidade do Minho"/></a>
+        <a href="http://www.fct.mctes.pt/"><img src="[% uri_base %]images/fct.png"
+               alt="Fundação para a Ciência e Tecnologia"
+               title="Fundação para a Ciência e Tecnologia"/></a>
+        <a href="http://www.qca.pt/fundos/feder.asp"><img src="[% uri_base %]images/feder.png"
+               alt="Fundo Europeu de Desenvolvimento Regional"
+               title="Fundo Europeu de Desenvolvimento Regional"/></a>
+	<p>Copyright &copy; 2010-2012 Per-Fide.<br/>Powered by <a href="http://perldancer.org/">Dancer</a> [% dancer_version %] &mdash; Original design by <a href="http://www.freecsstemplates.org">Free CSS Templates</a></p>
+      </div>
+    </div>
+  </body>
+</html>

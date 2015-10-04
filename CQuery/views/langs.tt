@@ -1,0 +1,14 @@
+<p>Select language</p>
+<form action="[% uri_base %]redirect" method="POST">
+  <input type="hidden" name="var" value="langs"/>
+  <input type="hidden" name="ctype" value="[% ctype %]"/>
+  <select id="langs" name="langs"
+          onChange='window.location="[% uri_base %]"+$("#ctype").val()+"/"+$("#langs").val()'>
+    [% FOREACH lang IN langs %] 
+    <option [% IF sellang==lang %]selected="selected"[% END %] value="[% lang %]">[% lang %]</option>
+    [% END %]
+  </select>
+  <input type="submit" value=" → "/>
+</form>
+
+

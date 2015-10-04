@@ -1,0 +1,90 @@
+<div id="wrapper">
+
+  <div id="header">  
+    <div style="float:right; color:#EEEEEE">
+      [<a style="color:#FFFFFF" href="http://per-fide.di.uminho.pt/site.pl/help">HELP</a>]</div>
+    <h1><a href="[% uri_base %]">Per-Fide</a></h1>
+    <h2>PTDC/CLE-LLI/108948/2008</h2>
+  </div>
+
+  <div id="menu">
+    [% IF toolbar %]<div id="languages">
+      [% IF toolbar.tmx %]<img src="[% uri_base %]images/bt_tmx.png" alt="TMX" title="TMX"/>&nbsp;[% END %]
+      [% IF toolbar.csv %]<img src="[% uri_base %]images/bt_csv.png" alt="CSV" title="CSV"/>&nbsp;[% END %]
+      [% IF toolbar.xces %]<img src="[% uri_base %]images/bt_xces.png" alt="XCES" title="XCES"/>&nbsp;[% END %]
+    </div>[% END %]
+
+    [% IF flash.error %]
+       <div id="error"
+            style="background: url([% uri_base %]images/error.png) no-repeat left bottom;">
+         [% flash.error %]
+       </div>
+    [% END %]
+    [% IF flash.warning %]
+       <div id="warning"
+            style="background: url([% uri_base %]images/warning.png) no-repeat left bottom;">
+         [% flash.warning %]
+       </div>
+    [% END %]
+    <div id="log">[% log %]</div>
+  </div> <!-- menu -->
+
+  <span class="clear"></span>
+</div>
+
+
+<div id="content">
+
+  [% IF options.menu_hor %]
+    <div id="menuContent_h">
+      <!-- <span id="closeButton">
+        <a href='javascript: closeMenu();'>&lt;</a>
+      </span> -->
+      <div id="realMenu">
+          <table style="border: 0 none; margin-bottom: 0px;">
+          <tr>
+        <td style="padding: 0px;">
+          <span><a href="javascript: closeHorMenu();"><img title="Hide Menu" alt="Hide Menu" style="border: 0px solid #af0a0a" src="[% uri_base %]images/close_h.png"></a></span><br/><br/><br/><br/><br/><br/><br/><br/>
+          <span id="closeHorButton"><a href="[% uri_base %]options/menu_hor/0"><img title="Vertical Menu" alt="Vertical Menu" style="border: 0px solid #af0a0a" src="[% uri_base %]images/menu_ver.png"></a></span>
+        </td>
+            <td style="vertical-align: top; padding: 0px 0px 0px 10px;">[% IF sidebar >= 1 %][% PROCESS ctype.tt %][% END %]
+            [% IF sidebar >= 2 %][% PROCESS langs.tt %][% END %]</td>
+            <td style="vertical-align: top; padding: 0px 0px 0px 30px;">[% IF sidebar >= 3 %][% PROCESS corpora.tt %][% END %]</td>
+          </tr>
+        </table>
+      </div>
+      <span id="showHorButton" style="display: none; margin-right: 40px;"><a href='javascript: showHorMenu();'><img title="Show Menu" alt="Show Menu" style="border: 0px solid #af0a0a" src="[% uri_base %]images/open_h.png"></a></span>
+      <div id="showButton" style="display: none;">
+         <a href='javascript: showMenu();'>&gt;</a>
+      </div>
+    </div>
+  [% ELSE %]
+    <div id="menuContent">
+      <span id="closeButton" style="float: right;">
+        <a href='javascript: closeMenu();'><img title="Hide Menu" alt="Hide Menu" style="border: 0px solid #af0a0a; margin-right: -4px;" src="[% uri_base %]images/close.png"></a>
+      </span>
+      <div id="realMenu">
+        [% IF sidebar >= 1 %][% PROCESS ctype.tt %][% END %]
+        [% IF sidebar >= 2 %][% PROCESS langs.tt %][% END %]
+        [% IF sidebar >= 3 %][% PROCESS corpora.tt %][% END %]
+        <span style="float: right;"><a href="[% uri_base %]options/menu_hor/1"><img title="Horizontal Menu" alt="Horizontal Menu" style="border: 0px solid #af0a0a" src="[% uri_base %]images/menu_hor.png"></a></span>
+      </div>
+      <div id="showButton" style="display: none;">
+         <a href='javascript: showMenu();'><img title="Show Menu" alt="Show Menu" style="border: 0px solid #af0a0a; margin-left: -4px;" src="[% uri_base %]images/open.png"></a>
+      </div>
+    </div>
+  [% END %]
+
+  [% IF options.menu_hor %]
+    <div id="primaryContent_h">
+  [% ELSE %]
+    <div id="primaryContent">
+  [% END %]
+      [% IF mono || bil %][% PROCESS concordances.tt %][% END %]
+      [% IF ptd %][% PROCESS ptds.tt %][% END %]
+      [% IF info %][% PROCESS info.tt %][% END %]
+      [% main %]
+  </div>
+
+  <div class="clear"></div>
+</div>

@@ -1,0 +1,66 @@
+
+<table class='ptd'>
+
+[% FOR entry IN dic.entries %]
+  <tr>
+     <td rowspan="2" class="percent" style="background-color: #[% entry.color %]">
+       <span id="prob[% type %][% entry.i %]"
+             class='rotate90'>[% FILTER format('%.2f') %][% entry.prob %][% END %]%</span>
+     </td>
+     <td><img id='btst[% type %][% entry.i %]' alt="X"
+              src="[% uri_base %]images/arrow_in.png"/></td>
+     <td><a href="[% uri_base %]ptd/[% selcorpora %]/[% dic.l2 %]/[% dic.l1 %]/[% entry.term %]">[% entry.term %]</a>[% IF entry.good %]&nbsp;<img src='[% uri_base %]images/tick.png' alt='ok'/>[% END %]</td>
+     <td class="r">[% entry.count %]</td>
+     <td class="r">
+       [% IF NOT type %]
+       <form action="[% uri_base %]search/bilingual/[% sellang %]" method="POST">
+         <input type="hidden" name="var" value="corpora"/>
+         <input type="hidden" name="lang" value="[% sellang %]"/>
+         <input type="hidden" name="ctype" value="bilingual"/>
+         <input type="hidden" name="corpora" value="[% selcorpora %]"/>
+         [% IF dic.dir1 == "st" %]
+            <input type="hidden" name="query1" value='[word="[% dic.word %]" %c]'/>
+            <input type="hidden" name="query2" value='[word="[% entry.term %]" %c]'/>
+         [% ELSE %]
+            <input type="hidden" name="query2" value='[word="[% dic.word %]" %c]'/>
+            <input type="hidden" name="query1" value='[word="[% entry.term %]" %c]'/>
+         [% END %]
+         <input type="submit" value=" → "/></form>
+         [% END %]
+     </td>
+  </tr>
+  <tr>
+    <td colspan="4">
+      <table id="st[% type %][% entry.i %]">
+         [% FOR trans IN entry.translations %]
+         <tr>
+           <td class='percent' style='background-color: #[% trans.color %]'>
+             [% FILTER format('%.2f') %][% trans.prob %][% END %]%
+           </td>
+           <td><a href="[% uri_base %]ptd/[% selcorpora %]/[% dic.l1 %]/[% dic.l2 %]/[% trans.term %]"/>[% trans.term %]</a></td>
+           <td class="r">[% trans.count %]</td>
+           <td class="r">
+             [% IF NOT type %]
+             <form action="[% uri_base %]search/bilingual/[% sellang %]" method="POST">
+               <input type="hidden" name="var" value="corpora"/>
+               <input type="hidden" name="lang" value="[% sellang %]"/>
+               <input type="hidden" name="ctype" value="bilingual"/>
+               <input type="hidden" name="corpora" value="[% selcorpora %]"/>
+               [% IF dic.dir1 == "ts" %]
+               <input type="hidden" name="query2" value='[word="[% trans.term %]" %c]'/>
+               <input type="hidden" name="query1" value='[word="[% entry.term %]" %c]'/>
+               [% ELSE %]
+               <input type="hidden" name="query2" value='[word="[% entry.term %]" %c]'/>
+               <input type="hidden" name="query1" value='[word="[% trans.term %]" %c]'/>
+               [% END %]
+               <input type="submit" value=" → "/></form>
+             [% END %]
+           </td>
+         </tr>
+         [% END %]
+      </table>
+    </td>
+  </tr>
+[% END %]
+</table>
+

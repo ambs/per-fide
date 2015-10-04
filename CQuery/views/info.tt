@@ -1,0 +1,23 @@
+
+<h3>[% info.meta.name %]</h3>
+
+
+<ul>
+	[% FOREACH i IN info.meta.keys %]
+		[% NEXT IF i.match('^\/') %]
+		<li><span style="font-weight: bold;">[% i.ucfirst %]</span>:
+		[% IF i == 'lang' %]
+			[% info.meta.$i.join(',') %]
+		[% ELSE %]
+		[% info.meta.$i %]
+		[% END %]
+		</li>
+	[% END %]
+</ul>
+
+<h3>Size</h3>
+<ul>
+	[% FOREACH j IN info.generated.cwb %]
+	<li>[% j.content %] [ TUs: [% j.tus %] | Tokens: [% j.tokens %] ]</li>
+	[% END %]
+</ul>

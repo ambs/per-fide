@@ -1,0 +1,7 @@
+<div id="search_results">
+  <strong style="border-bottom: dotted 1px #cacaca; display:block; width: 50%;">SEARCH RESULTS</strong>
+  <span style="padding-left: 20px"></span>
+  [% FOREACH k IN search_results.keys %]
+    <span>[% k %]: [% search_results.$k %] entries</span> [%- '|' UNLESS loop.last %]
+  [% END %]
+</div>

@@ -1,0 +1,62 @@
+[% IF search_results %]
+  [% PROCESS search_results.tt %]
+[% END %]
+
+[% IF mono %]
+  [% FOR c IN mono %]
+    [% UNLESS search_results.item(c.crp) > 0 %][% NEXT %][% END %]
+    <div class="error" style="cursor: pointer;" onClick="javascript: show('[% c.crp %]');">
+    [% IF c.note %]<div class="note">[% c.note %]</div>[% END %][% c.crp %] &mdash; Entry [% c.from_entry + 1 %] to [% c.to_entry %]</div>
+    [% IF c.shown_size > 0 %]
+      <div id="[% c.crp %]">
+       [% FOR m IN c.ans %]
+          <div class="match">
+            <div class="match_meta">[% m.meta %]</div>
+            <div class="match_mono">[% m.match %]</div>
+          </div>
+       [% END %]
+       </div>
+    [% END %]
+  [% END %]
+  [% PROCESS pager.tt %]
+[% END %]
+
+[% IF bil %]
+  <div style="float: left; margin-right: 3px; margin-top: -18px;">
+  <form action="[% uri_base %]export/[% ctype %]/[% sellang %]" method="POST">
+    [% IF bil %]
+      <input type="hidden" name="query1" value="[% query1_string | html %]"/>
+      <input type="hidden" name="query2" value="[% query2_string | html %]"/>
+    [% ELSE %]
+      <input type="hidden" name="query" value="[% query_string %]"/>
+    [% END %]
+    [% FOREACH i IN selcorpora %]
+      <input type="hidden" name="corpora" value="[% i %]"/>
+    [% END %]
+    <input type="image" src="[% uri_base %]images/export.png" alt="Export">
+  </form>
+  </div>
+
+  <div style="float: right; margin-right: 3px; margin-top: -17px;">
+  <a id="b_showHH" href='javascript: showHH();'><img src="[% uri_base %]images/vv.png"></a>
+  <a id="b_showVV" style="display: none;" href='javascript: showVV();'><img src="[% uri_base %]images/hh.png"></a>
+  </div>
+  [% FOR c IN bil %]
+    [% UNLESS search_results.item(c.crp) > 0 %][% NEXT %][% END %]
+    <div class="error" style="cursor: pointer;" onClick="javascript: show('[% c.crp %]');">
+    [% IF c.note %]<div class="note">[% c.note %]</div>[% END %][% c.crp %] &mdash; [% c.from_entry + 1 %] to [% c.to_entry %] entries</div>
+    [% IF c.shown_size > 0 %]
+      <div id="[% c.crp %]">
+      [% FOR m IN c.ans %]
+        <div class="match">
+        <div class="match_meta">[% m.meta %]</div>
+        <div class="match_left"  cid="[% c.id %]" slang="[% lang1 %]" tlang="[% lang2 %]">[% m.left %]</div>
+        <div class="match_right" cid="[% c.id %]" slang="[% lang1 %]" tlang="[% lang2 %]">[% m.right %]</div>
+        <hr class="clear"/>
+        </div>
+      [% END %]
+      </div>
+    [% END %]
+  [% END %]
+  [% PROCESS pager.tt %]
+[% END %]
