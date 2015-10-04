@@ -1,5 +1,7 @@
 package CQuery;
 use v5.10;
+use feature "switch";
+
 use Dancer ':syntax';
 use Dancer::Plugin::FlashMessage;
 use Template::Stash;
@@ -7,12 +9,15 @@ use CWB::CQP::More;
 use Data::Dumper;
 use Try::Tiny;
 use File::Spec;
-use Lingua::NATools::PTD;
+use Lingua::PTD;
 use File::Basename;
 use XML::Simple;
 
 use lib '/home/smash/playground/per-fide-code/CAdmin/lib'; # XXX
 use CAdmin::Utils;
+
+
+no warnings 'experimental::smartmatch';
 
 our $VERSION = '0.1';
 our $SAMPLE_SIZE = 50;
@@ -576,7 +581,9 @@ sub __search_bilingual_xor {
 
     my $cwb = CWB::CQP::More->new({utf8 => 1});
     my ($C, $bil);
+
     if ($query1 xor $query2) {
+
         my $total = 0;
         while ($curr < scalar(@$corpora)) {
             my $id = @$corpora[$curr];
@@ -660,6 +667,7 @@ sub __search_bilingual {
 
     my $cwb = CWB::CQP::More->new({utf8 => 1});
     my ($C, $bil);
+
     foreach my $id (@$corpora) {
        try {
             $cwb->change_corpus($data{$id}{cwb_sid});
@@ -978,13 +986,13 @@ sub corpus_ptds {
 			if ($_ =~ m/$l1\-$l2/i) {
 				my $file = "$RESOURCES/corpus/$name/$_";
 				$file =~ s/dmp$/sqlite/;
-				my $st = Lingua::NATools::PTD->new($file);
+				my $st = Lingua::PTD->new($file);
 				$res->{st} = $st;
 			}
 			if ($_ =~ m/$l2\-$l1/i) {
 				my $file = "$RESOURCES/corpus/$name/$_";
 				$file =~ s/dmp$/sqlite/;
-				my $ts = Lingua::NATools::PTD->new($file);
+				my $ts = Lingua::PTD->new($file);
 				$res->{ts} = $ts;
 			}
 		}
@@ -1000,8 +1008,8 @@ sub mega_ptd {
     my @langs = map { lc } @_;
     my $dir = File::Spec->catdir($PTD_DIR => sprintf("all_%s_%s", @langs));
     if (-d $dir) {
-        my $st = Lingua::NATools::PTD->new(File::Spec->catfile($dir => sprintf("%s-%s.sqlite",@langs))) if -e sprintf("%s-%s.sqlite",@langs);
-        my $ts = Lingua::NATools::PTD->new(File::Spec->catfile($dir => sprintf("%s-%s.sqlite",reverse @langs))) if -e sprintf("%s-%s.sqlite",reverse @langs);
+        my $st = Lingua::PTD->new(File::Spec->catfile($dir => sprintf("%s-%s.sqlite",@langs))) if -e sprintf("%s-%s.sqlite",@langs);
+        my $ts = Lingua::PTD->new(File::Spec->catfile($dir => sprintf("%s-%s.sqlite",reverse @langs))) if -e sprintf("%s-%s.sqlite",reverse @langs);
         return undef unless $st && $ts;
         return { st => $st, ts => $ts };
     } else {
