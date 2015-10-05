@@ -6,6 +6,7 @@ use Dancer ':syntax';
 use Dancer::Plugin::FlashMessage;
 use Template::Stash;
 use CWB::CQP::More;
+use CWB::CQP::More::Parallel;
 use Data::Dumper;
 use Try::Tiny;
 use File::Spec;
@@ -16,9 +17,9 @@ use XML::Simple;
 use lib '/home/smash/playground/per-fide-code/CAdmin/lib'; # XXX
 use CAdmin::Utils;
 
-
 no warnings 'experimental::smartmatch';
 
+our $CUTLIMIT = 200_000;
 our $VERSION = '0.1';
 our $SAMPLE_SIZE = 50;
 our $PTD_DIR = File::Spec->catdir(File::Spec->rootdir() => 'home' => 'ptd');
@@ -217,20 +218,24 @@ any ['get', 'post'] => qr'/export/(bilingual)/([A-Z]{2})-([A-Z]{2})' => sub {
         flash error => 'No corpus selected';
         return redirect request->referer;
     }
-	header('Content-Type' => 'text/xml');
+
+    header('Content-Type' => 'text/xml');
     my $corpora = ref(params->{corpora}) eq 'ARRAY' ? params->{corpora} : [params->{corpora}];
     return redirect '/' unless ($corpora and ($query1 or $query2) );
 
     my ($bil,$search_results);
 
-	my $curr;
+    my $curr;
 
     if ($query1 xor $query2) {
         $search_results = __search_results_bil($query1,$query2,$lang,$corpora, 1);
         ($bil,$curr) = __search_bilingual_xor($query1,$query2,$lang,0,-1,0,$corpora, 1);
     }
     else {
-        ($bil,$search_results,$curr) = __search_bilingual($query1_string,$query2_string,$lang,0,-1,0,$corpora, 1);
+        ($bil,$search_results,$curr) = __search_bilingual($query1_string,
+                                                          $query2_string,
+                                                          $lang,
+                                                          0,-1,0,$corpora, 1);
     }
 
     my $options = session 'options';
@@ -273,21 +278,21 @@ any ['get', 'post'] => qr'/search/(bilingual)/([A-Z]{2})-([A-Z]{2})' => sub {
     return redirect '/' unless ($corpora and ($query1 or $query2) );
 
     my $has_prev = 0;
-    $has_prev = 1 if ($from > 0 or $curr > 0);
+    $has_prev = 1 if $from > 0 or $curr > 0;
+
     my $has_next = 1;
     my ($bil,$search_results);
 
     if ($query1 xor $query2) {
         $search_results = __search_results_bil($query1,$query2,$lang,$corpora);
         ($bil,$curr) = __search_bilingual_xor($query1,$query2,$lang,$curr,$pp,$from,$corpora);
-        $from = @$bil[-1]->{to_entry};
-        $has_next = 0 if $from >= $search_results->{@$bil[-1]->{crp}};
     }
     else {
-        ($bil,$search_results,$curr) = __search_bilingual($query1_string,$query2_string,$lang,$curr,$pp,$from,$corpora);
-        $from = @$bil[-1]->{to_entry};
-        $has_next = 0 if $from >= $search_results->{@$bil[-1]->{crp}};
+        ($bil,$search_results, $curr) = __search_bilingual($query1_string,$query2_string,$lang,$curr,$pp,$from,$corpora);
     }
+
+    $from = @$bil[-1]->{to_entry};
+    $has_next = 0 if $from >= $search_results->{@$bil[-1]->{crp}};
 
     # highlight word concords in opposite language
     if ($query1 xor $query2) {
@@ -574,7 +579,7 @@ sub __search_monolingual {
 }
 
 sub __search_bilingual_xor {
-    my ($query1,$query2,$lang,$curr,$pp,$from_entry,$corpora,$raw) = @_;
+    my ($query1, $query2, $lang, $curr, $pp, $from_entry, $corpora, $raw) = @_;
     my $to_entry = $from_entry + $pp - 1;
 
     my %data = __corpora_data_bil($corpora,$lang);
@@ -585,6 +590,7 @@ sub __search_bilingual_xor {
     if ($query1 xor $query2) {
 
         my $total = 0;
+
         while ($curr < scalar(@$corpora)) {
             my $id = @$corpora[$curr];
 
@@ -599,13 +605,13 @@ sub __search_bilingual_xor {
                 $cwb->change_corpus($data{$id}->{cwb_tid});
                 $cwb->annotation_show($data{$id}->{cwb_sid});
             }
-			
-			if(defined $raw){
-				$cwb->set(Context => 'tu', LD => "''", RD => "''", PrintStructures => '"tu_id"');
-			}
-			else{
-				$cwb->set(Context => 'tu', LD => "'<b>'", RD => "'</b>'", PrintStructures => '"tu_id"');
-			}
+
+            if(defined $raw){
+                $cwb->set(Context => 'tu', LD => "''", RD => "''", PrintStructures => '"tu_id"');
+            }
+            else{
+                $cwb->set(Context => 'tu', LD => "'<b>'", RD => "'</b>'", PrintStructures => '"tu_id"');
+            }
             $cwb->annotation_hide('cpos');
             try {
                 $cwb->exec_query($query1 ? $query1 : $query2);
@@ -657,124 +663,64 @@ sub __search_bilingual_xor {
     return ($bil, $curr);
 }
 
+
 sub __search_bilingual {
-    my ($query1_string,$query2_string,$lang,$curr,$pp,$from_entry,$corpora, $raw) = @_;
+    my ($query1, $query2, $lang, $curr, $pp, $from_entry, $corpora, $raw) = @_;
     my $to_entry = $from_entry + $pp - 1;
 
     my %data = __corpora_data_bil($corpora,$lang);
-    my $query1 = guess_query($query1_string);
-    my $query2 = guess_query($query2_string, "B");
 
-    my $cwb = CWB::CQP::More->new({utf8 => 1});
+    my $cwb = CWB::CQP::More::Parallel->new({utf8 => 1});
     my ($C, $bil);
+    my $sresults;
 
-    foreach my $id (@$corpora) {
-       try {
-            $cwb->change_corpus($data{$id}{cwb_sid});
+    my $total = 0;
 
-			if(defined $raw){
-				$cwb->set(Context => 'tu', LD => "''", RD => "''", PrintStructures => '"tu_id"');
-			}
-			else{
-				$cwb->set(Context => 'tu', LD => "'<b>'", RD => "'</b>'", PrintStructures => '"tu_id"');
-			}
+    while ($curr < scalar(@$corpora)) {
+        my $id = @$corpora[$curr];
 
-            $cwb->annotation_hide('cpos');
-            $cwb->exec_query($query1);
-            my $s1  = $cwb->size('A');
-            my $it1 = $cwb->iterator('A', size => 1, corpus => $data{$id}{cwb_sid});
+        if ($total+$to_entry-$from_entry > $pp) {
+            $to_entry = $pp - $total;
+        }
 
-            $cwb->change_corpus($data{$id}{cwb_tid});
-			if(defined $raw){
-				$cwb->set(Context => 'tu', LD => "''", RD => "''", PrintStructures => '"tu_id"');
-			}
-			else{
-				$cwb->set(Context => 'tu', LD => "'<b>'", RD => "'</b>'", PrintStructures => '"tu_id"');
-			}
+        $cwb->change_corpus($data{$id}->{cwb_sid});
+        $cwb->annotation_show($data{$id}->{cwb_tid});
 
-            $cwb->annotation_hide('cpos');
-            $cwb->exec_query($query2);
-            my $s2  = $cwb->size('B');
-            my $it2 = $cwb->iterator('B', size => 1, corpus => $data{$id}{cwb_tid});
+        if(defined $raw){
+            $cwb->set(Context => 'tu', LD => "''", RD => "''", PrintStructures => '"tu_id"');
+        }
+        else{
+            $cwb->set(Context => 'tu', LD => "'<b>'", RD => "'</b>'", PrintStructures => '"tu_id"');
+        }
+        $cwb->annotation_hide('cpos');
+        try {
+            my $query1_str = guess_query($query1, "DISCARD");
+            my $query2_str = guess_query($query2, "DISCARD");
+            $cwb->exec("A = $query1_str :\U$data{$id}->{cwb_tid}\E $query2_str cut $CUTLIMIT;");
+            my $size = $cwb->size('A');
 
-            if ($s1 > 0 && $s2 > 0) {
-            	my ($id1, $id2, $match1, $match2, $list);    
-                my $C = 0;
-                my ($peeked1, $peeked2) = (0, 0);
-                my $nriterations;
+            $sresults->{$id} = $size;
+            my (@pairs, $res, @lines);
+            if ($size > 0) {
+                @pairs = $cwb->cat('A', $from_entry, $to_entry);
 
-                ($id1, $match1) = clean_simplematch($it1->next);
-                ($id2, $match2) = clean_simplematch($it2->next);
-
-                while ($id1 && $id2) {
-                    $nriterations++;
-                    if ($id1 == $id2) {
-                        $C++;
-                        push @$list, {
-                                      meta  => "#$C $id1",
-                                      left  => $match1,
-                                      right => $match2
-                                     };
-                        ($id1, $match1) = clean_simplematch($it1->next);
-                        ($id2, $match2) = clean_simplematch($it2->next);
-                    }
-                    elsif ($id1 + 1000 < $id2 && not($peeked1)) {
-                        my $peek = $it1->peek(100);
-                        if ($peek) {
-                            my ($i, $m) = clean_simplematch($peek);
-                            if ($i < $id2) {
-                                ($id1, $match1) = ($i, $m);
-                                $it1->forward(100);
-                            } else {
-                                $peeked1 = 100;
-                            }
-                        }
-                        if (!$peek || $peeked1) {
-                            ($id1, $match1) = clean_simplematch($it1->next);
-                        }
-                        }
-                    elsif ($id2 + 1000 < $id1 && not($peeked2)) {
-                        my $peek = $it2->peek(100);
-                        if ($peek) {
-                            my ($i, $m) = clean_simplematch($peek);
-                            if ($i < $id1) {
-                                ($id2, $match2) = ($i, $m);
-                                $it2->forward(100);
-
-                            } else {
-                                $peeked2 = 100;
-                            }
-                        }
-                        if (!$peek || $peeked2) {
-                            ($id2, $match2) = clean_simplematch($it2->next);
-                        }
-                    }
-                    elsif ($id1 < $id2) {
-                        $peeked1-- if $peeked1;
-                        ($id1, $match1) = clean_simplematch($it1->next);
-                    }
-                    elsif ($id2 < $id1) {
-                        $peeked2-- if $peeked2;
-                        ($id2, $match2) = clean_simplematch($it2->next);
-                    }
-                }
-
-                if ($C) {
-                    push @$bil, { id => $id,
-                                  from_entry => 0,
-                                  to_entry => 0,
-                                  crp => $data{$id}{name},
-                                  ans => $list,
-                                  note => $data{$id}{ptd} ? "with PTD" : "",
-                                  shown_size => $C,
-                                  size => '?' };
-                } else {
-                    push @$bil, { crp => $data{$id}{name},
-                                  from_entry => 0,
-                                  to_entry => 0,
-                                  shown_size => 0,
-                                  size => 0 };
-                }
+                @$res = map {
+                    my ($tu, $m) = clean_simplematch($_->[0]);
+                    my $t = clean_translation($_->[1]);
+                    $C++;
+                    my ($left, $right) = $query1 ? ($m, $t) : ($t, $m);
+                    +{ 'meta'  => "#".($from_entry+$C)." &mdash; $data{$id}{name} &mdash; TU $tu",
+                       'left'  => $left,
+                       'right' => $right }
+                } @pairs;
+                push @$bil, { crp => $data{$id}{name},
+                              from_entry => $from_entry,
+                              to_entry => $from_entry+scalar(@pairs),
+                              id => $id,
+                              size => $size,
+                              #note => $data{$id}{ptd} ? "with PTD" : "",
+                              shown_size => min($size, $SAMPLE_SIZE),
+                              ans => $res };
             } else {
                 push @$bil, { crp => $data{$id}{name},
                               from_entry => 0,
@@ -782,43 +728,19 @@ sub __search_bilingual {
                               shown_size => 0,
                               size => 0 };
             }
+            $total += scalar(@pairs) + 1;
         } catch {
             ## XXX => fixme
-            error  "CWB ERROR ==> $_\n";
+            error "CWB ERROR ==> $_\n";
             print STDERR "CWB ERROR ==> $_\n";
         };
-    }
-
-    # calculate search results before cut
-    my $search_results;
-    foreach my $c (@$bil) {
-        $search_results->{$c->{crp}} = $c->{ans} ? scalar @{$c->{ans}} : 0;
-    }
-
-    # cut final results
-    my $total = 0;
-    my $cut = [];
-    while ($curr < scalar(@$bil)) {
-        my $c = @$bil[$curr];
-        $c->{ans} = [@{$c->{ans}}[$from_entry .. $to_entry]];
-        $c->{ans} = [grep {defined} @{$c->{ans}}];
-        my $entries = scalar @{$c->{ans}};
-        $c->{from_entry} = $from_entry;
-        $c->{to_entry} = $from_entry + $entries;
-        $total += $entries;
-        push @$cut, $c;
-
-        if ($pp != -1 && $total >= $pp) {
+        if ($pp != -1 && $total > $pp) {
             last;
         }
-
         $curr++;
-        $from_entry = 0;
-        $to_entry = $from_entry + ($pp - $entries) - 1;
+        $C = 0;
     }
-    $bil = $cut;
-
-    return ($bil, $search_results, $curr);
+    return ($bil, $sresults, $curr);
 }
 
 sub __search_results {
@@ -862,7 +784,11 @@ sub __search_results_bil { # XXX merge with __search_results if possible ???
 
     my $cwb = CWB::CQP::More->new( { utf8 => 1 } );
     foreach my $id (@$corpora) {
-        if ($query1) {
+        if ($query1 && $query2) {
+            $cwb->change_corpus($data{$id}->{cwb_sid});
+            $cwb->annotation_show($data{$id}->{cwb_tid});
+        }
+        elsif ($query1) {
             $cwb->change_corpus($data{$id}->{cwb_sid});
             $cwb->annotation_show($data{$id}->{cwb_tid});
         } else {
@@ -870,17 +796,21 @@ sub __search_results_bil { # XXX merge with __search_results if possible ???
             $cwb->annotation_show($data{$id}->{cwb_sid});
         }
 
-		if(defined $raw){
-			$cwb->set(Context => 'tu', LD => "''", RD => "''", PrintStructures => '"tu_id"');
-		}
-		else{
-			$cwb->set(Context => 'tu', LD => "'<b>'", RD => "'</b>'", PrintStructures => '"tu_id"');
-		}
+        if(defined $raw){
+            $cwb->set(Context => 'tu', LD => "''", RD => "''", PrintStructures => '"tu_id"');
+        }
+        else{
+            $cwb->set(Context => 'tu', LD => "'<b>'", RD => "'</b>'", PrintStructures => '"tu_id"');
+        }
 
         $cwb->annotation_hide('cpos');
         my $size;
         try {
-            $cwb->exec_query($query1 ? $query1 : $query2);
+            if ($query1 && $query2) {
+                $cwb->exec("A = $query1 :\U$data{$id}->{cwb_tid}\E $query2 cut $CUTLIMIT;");
+            } else {
+                $cwb->exec_query($query1 ? $query1 : $query2);
+            }
             $size = $cwb->size('A');
         } catch {
             ## XXX => fixme
@@ -939,9 +869,10 @@ sub guess_query {
         $query =~ s/$/"/;
         $query =~ s/\s+/" "/g;
     }
-    $query .= ";" unless $query =~ /;\s*$/;
-    $query = "$name = $query";
-
+    if ($name ne "DISCARD") { ## hack
+        $query .= ";" unless $query =~ /;\s*$/;
+        $query = "$name = $query";
+    }
     return $query;
 }
 
